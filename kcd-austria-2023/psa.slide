@@ -1,0 +1,75 @@
+# Bringing Pod Security Admission to Your Kubernetes Distribution
+
+Stanislav Láznička
+Software Engineer
+Red Hat
+stlaz on k8s Slack
+
+## Pod Security Admission
+
+- successor to Pod Security Policies
+- cluster wide configuration with namespaces overrides
+- offers three security levels:
+  - restricted - most restricted
+  - baseline - "empty security context" level
+  - privileged - do whatever
+
+## Pod Security Admission (2)
+
+- operates in three modes:
+  - enforcing (`pod-security.kubernetes.io/enforce`)
+  - client logging (`pod-security.kubernetes.io/warn`)
+  - server logging (`pod-security.kubernetes.io/audit`)
+- each mode can also be versioned (`pod-security.kubernetes.io/<MODE>-version: <VERSION>`)
+
+## Step one - start logging
+
+- "let's see how bad this is" phase
+- TODO: global logging config
+- underline importance of communication!
+- TODO: screenshot of a mad person slack thread?
+- TODO: "catch issues from installation"
+- TODO: mention logging label and add a `jq` command to query audit logs (+ maybe how to retrieve audit logs?)
+
+## Optional - Got pod security?
+
+- pod security admission already exists
+  - allow duality?
+    - gotta sync namespace labels ☹
+- TODO: mention the design of PSA label syncer controller?
+- TODO: mention server-side apply?
+- TODO: mention psachecker?
+
+## Testing
+
+- introduce PSa labels to your tests
+- tests are usually static -> tedious but not hard
+- TODO: mention a mix of upstream and downstream tests
+- TODO: ref upstream PRs from me and Sergiusz
+- TODO: mention upstream test function for restricted security context
+
+## Set up alerts
+
+- TODO: post our alert query
+- TODO: explain that we had to introduce our namespaces to the query, post a link to metrics state explosion upstream issue
+- TODO: talk about the importance of telemetry and telemetry privacy issues
+
+## Wait
+
+- you've done everything
+- your first PSa-enabled version will get shipped to customers in two months
+
+## Get results, iterate
+
+- people do weird things
+- some of the weird things aren't that weird 
+- work your findings into your platform, go back to _Wait_
+
+## Enforce
+
+- Enforce `<your dream security profile here>` globally!
+- Well done!
+  - product management is excited
+  - your colleagues carry you on hands
+  - the sales are skyrocketing
+
