@@ -1,0 +1,3 @@
+[submodule "go-present-styles"]
+	path = go-present-styles
+	url = git@github.com:talks-and-stuff/go-present-styles.git
