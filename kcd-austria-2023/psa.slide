@@ -1,18 +1,18 @@
 # Bringing Pod Security Admission to Your Kubernetes Distribution
 
 Stanislav Láznička
-Software Engineer
-Red Hat
+Software Engineer at Red Hat
 stlaz on k8s Slack
 
 ## Pod Security Admission
 
 - successor to Pod Security Policies
 - cluster wide configuration with namespaces overrides
-- offers three security levels:
+- offers three security levels: [TODO: add link to PSS page]
   - restricted - most restricted
   - baseline - "empty security context" level
   - privileged - do whatever
+- the levels might require further admission checks - e.g. CSI inline volumes
 
 ## Pod Security Admission (2)
 
@@ -25,34 +25,54 @@ stlaz on k8s Slack
 ## Step one - start logging
 
 - "let's see how bad this is" phase
-- TODO: global logging config
-- underline importance of communication!
-- TODO: screenshot of a mad person slack thread?
-- TODO: "catch issues from installation"
-- TODO: mention logging label and add a `jq` command to query audit logs (+ maybe how to retrieve audit logs?)
+- global logging config:
 
-## Optional - Got pod security?
+.code ./code/psa-config-logging.yaml /CONFIG OMIT/,/END OMIT/
+
+- identify offending pods from default installation
+
+## Optional - Got your own pod security?
 
 - pod security admission already exists
   - allow duality?
     - gotta sync namespace labels ☹
-- TODO: mention the design of PSA label syncer controller?
-- TODO: mention server-side apply?
+- controller mapping existing pod admission to namespaces
+- use [server-side apply](https://kubernetes.io/docs/reference/using-api/server-side-apply/)
+    - allows per-label ownership
+
+## Introduce other teams to your plan
+
+- it's a group effort, communicate!
+  - "things will break!"
+  - emails, Slack announce channels, blogs, department-wide presentations
+  - an angry PM *will* appear sooner or later
+- identifying violations in audit logs:
+```
+gzcat *-audit-*log.gz | \ [FIXME: does not display correctly]
+  jq '. | select(.annotations | has("pod-security.kubernetes.io/audit-violations")) | {namespace: .objectRef.namespace, podSecurityReason: .annotations["pod-security.kubernetes.io/audit-violations"] }' | \ 
+  jq -C -s --sort-keys '. | unique'
+```
 - TODO: mention psachecker?
+
+## Set up alerts
+
+- no violations in the default installation
+    - TODO: sample PR adding securityContext to pods?
+- `monitoring.coreos.com/PrometheusRule` query for our pod security alerts:
+
+.code ./code/podsecurity-violations-alert.yaml /START OMIT/,/END OMIT/
+
+- TODO: explain that we had to introduce our namespaces to the metric, post a link to [metrics cardinatily explosion](https://github.com/kubernetes/kubernetes/pull/102523) upstream issue
+- TODO: talk about the importance of telemetry and telemetry privacy issues, and about alert vs metrics (the former being visible to users)
 
 ## Testing
 
 - introduce PSa labels to your tests
 - tests are usually static -> tedious but not hard
 - TODO: mention a mix of upstream and downstream tests
-- TODO: ref upstream PRs from me and Sergiusz
+- [Adding PSa labels to upstream e2e tests](https://github.com/kubernetes/kubernetes/pull/109283)
+- [Extending the labels set to all instead of just enforcement](https://github.com/kubernetes/kubernetes/pull/118280)
 - TODO: mention upstream test function for restricted security context
-
-## Set up alerts
-
-- TODO: post our alert query
-- TODO: explain that we had to introduce our namespaces to the query, post a link to metrics state explosion upstream issue
-- TODO: talk about the importance of telemetry and telemetry privacy issues
 
 ## Wait
 
