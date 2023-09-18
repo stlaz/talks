@@ -2,24 +2,26 @@
 
 Stanislav Láznička
 Software Engineer at Red Hat
+
+https://github.com/stlaz
 stlaz on k8s Slack
 
 ## Pod Security Admission
 
 - successor to Pod Security Policies
 - cluster wide configuration with namespaces overrides
-- offers three security levels: [TODO: add link to PSS page]
-  - restricted - most restricted
-  - baseline - "empty security context" level
-  - privileged - do whatever
+- offers three [security profiles](https://kubernetes.io/docs/concepts/security/pod-security-standards/):
+  - **restricted** - most restricted
+  - **baseline** - "empty security context" level
+  - **privileged** - do whatever
 - the levels might require further admission checks - e.g. CSI inline volumes
 
 ## Pod Security Admission (2)
 
 - operates in three modes:
-  - enforcing (`pod-security.kubernetes.io/enforce`)
-  - client logging (`pod-security.kubernetes.io/warn`)
-  - server logging (`pod-security.kubernetes.io/audit`)
+  - **enforcing** (`pod-security.kubernetes.io/enforce`)
+  - **client logging** (`pod-security.kubernetes.io/warn`)
+  - **server logging** (`pod-security.kubernetes.io/audit`)
 - each mode can also be versioned (`pod-security.kubernetes.io/<MODE>-version: <VERSION>`)
 
 ## Step one - start logging
@@ -48,8 +50,12 @@ stlaz on k8s Slack
   - an angry PM *will* appear sooner or later
 - identifying violations in audit logs:
 ```
-gzcat *-audit-*log.gz | \ [FIXME: does not display correctly]
-  jq '. | select(.annotations | has("pod-security.kubernetes.io/audit-violations")) | {namespace: .objectRef.namespace, podSecurityReason: .annotations["pod-security.kubernetes.io/audit-violations"] }' | \ 
+zcat *-audit-*log.gz | \
+  jq '. | select(.annotations | has("pod-security.kubernetes.io/audit-violations")) |
+  {
+     namespace: .objectRef.namespace,
+     podSecurityReason: .annotations["pod-security.kubernetes.io/audit-violations"]
+  }' | \
   jq -C -s --sort-keys '. | unique'
 ```
 - TODO: mention psachecker?
@@ -57,33 +63,34 @@ gzcat *-audit-*log.gz | \ [FIXME: does not display correctly]
 ## Set up alerts
 
 - no violations in the default installation
-    - TODO: sample PR adding securityContext to pods?
-- `monitoring.coreos.com/PrometheusRule` query for our pod security alerts:
+- `monitoring.coreos.com/PrometheusRule` query for our **informative** pod security alerts:
 
 .code ./code/podsecurity-violations-alert.yaml /START OMIT/,/END OMIT/
 
-- TODO: explain that we had to introduce our namespaces to the metric, post a link to [metrics cardinatily explosion](https://github.com/kubernetes/kubernetes/pull/102523) upstream issue
-- TODO: talk about the importance of telemetry and telemetry privacy issues, and about alert vs metrics (the former being visible to users)
+- `ocp_namespace` comes from a downstream patch
+    - careful around [label cardinality](https://github.com/kubernetes/kubernetes/pull/102523)!
+-  `nil -> val` issue
+- telemetry is necessary
+
+: mention alert vs metrics (the former being visible to users), telemetry data privacy
 
 ## Testing
 
-- introduce PSa labels to your tests
-- tests are usually static -> tedious but not hard
-- TODO: mention a mix of upstream and downstream tests
-- [Adding PSa labels to upstream e2e tests](https://github.com/kubernetes/kubernetes/pull/109283)
-- [Extending the labels set to all instead of just enforcement](https://github.com/kubernetes/kubernetes/pull/118280)
-- TODO: mention upstream test function for restricted security context
+- introduce PSa labels to your e2e tests
+- assuming e2e tests are a mix of upstream/downstream
+- [Adding PSa labels to upstream e2e tests](https://github.com/kubernetes/kubernetes/pull/106454)
+    - +[helpers](https://github.com/kubernetes/kubernetes/blob/6c578bc982f37d9431d7fc586a9123a0dd19c468/test/e2e/framework/pod/utils.go#L156-L177) to retrieve restricted security context
+- [Default restricted enforcement in upstream e2e tests](https://github.com/kubernetes/kubernetes/pull/109283)
+- [Set all labels instead of just enforcement in e2e tests](https://github.com/kubernetes/kubernetes/pull/118280)
+: tests are usually static -> labelling them is tedious but not hard
+: assuming e2e tests are run in multiple repos
 
-## Wait
+## What now?
 
-- you've done everything
-- your first PSa-enabled version will get shipped to customers in two months
-
-## Get results, iterate
-
-- people do weird things
-- some of the weird things aren't that weird 
-- work your findings into your platform, go back to _Wait_
+- gradual changes, waiting periods
+- communication with customers
+- out there be monsters
+    - "Nobody should do that! Oh, the humanity!"
 
 ## Enforce
 
@@ -93,3 +100,13 @@ gzcat *-audit-*log.gz | \ [FIXME: does not display correctly]
   - your colleagues carry you on hands
   - the sales are skyrocketing
 
+## Special thanks
+
+- My team
+    - [Sergiusz Urbaniak](https://github.com/s-urbaniak)
+    - [Krzysztof Ostrowski](https://github.com/ibihim)
+    - [Ilias Rinis](https://github.com/liouk)
+
+- [David Eads](https://github.com/deads2k)
+- [Camila Macedo](https://github.com/camilamacedo86)
+- [Ben Parees](https://github.com/bparees)
