@@ -31,13 +31,23 @@ stlaz on k8s Slack
 
 .code ./code/psa-config-logging.yaml /CONFIG OMIT/,/END OMIT/
 
-- identify offending pods from default installation
+## Identifying violations in audit logs
 
-## Optional - Got your own pod security?
+- in a folder with kube-apiserver audit logs
+```
+cat *-audit-*log.gz | \
+  jq '. | select(.annotations | has("pod-security.kubernetes.io/audit-violations")) |
+  {
+     namespace: .objectRef.namespace,
+     podSecurityReason: .annotations["pod-security.kubernetes.io/audit-violations"]
+  }' | \
+  jq -C -s --sort-keys '. | unique'
+```
+
+## Got your own pod security?
 
 - pod security admission already exists
-  - allow duality?
-    - gotta sync namespace labels ☹
+  - gotta sync namespace labels ☹
 - controller mapping existing pod admission to namespaces
 - use [server-side apply](https://kubernetes.io/docs/reference/using-api/server-side-apply/)
     - allows per-label ownership
@@ -48,21 +58,12 @@ stlaz on k8s Slack
   - "things will break!"
   - emails, Slack announce channels, blogs, department-wide presentations
   - an angry PM *will* appear sooner or later
-- identifying violations in audit logs:
-```
-zcat *-audit-*log.gz | \
-  jq '. | select(.annotations | has("pod-security.kubernetes.io/audit-violations")) |
-  {
-     namespace: .objectRef.namespace,
-     podSecurityReason: .annotations["pod-security.kubernetes.io/audit-violations"]
-  }' | \
-  jq -C -s --sort-keys '. | unique'
-```
-- TODO: mention psachecker?
+- explain how to identify violations
 
 ## Set up alerts
 
 - no violations in the default installation
+- telemetry is required
 - `monitoring.coreos.com/PrometheusRule` query for our **informative** pod security alerts:
 
 .code ./code/podsecurity-violations-alert.yaml /START OMIT/,/END OMIT/
@@ -70,7 +71,6 @@ zcat *-audit-*log.gz | \
 - `ocp_namespace` comes from a downstream patch
     - careful around [label cardinality](https://github.com/kubernetes/kubernetes/pull/102523)!
 -  `nil -> val` issue
-- telemetry is necessary
 
 : mention alert vs metrics (the former being visible to users), telemetry data privacy
 
