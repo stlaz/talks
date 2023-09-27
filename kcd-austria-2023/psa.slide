@@ -12,7 +12,7 @@ stlaz on k8s Slack
 - cluster wide configuration with namespaces overrides
 - offers three [security profiles](https://kubernetes.io/docs/concepts/security/pod-security-standards/):
   - **restricted** - most restricted
-  - **baseline** - "empty security context" level
+  - **baseline** - "empty securityContext" level
   - **privileged** - do whatever
 - the levels might require further admission checks - e.g. CSI inline volumes
 
@@ -35,7 +35,7 @@ stlaz on k8s Slack
 
 - in a folder with kube-apiserver audit logs
 ```
-cat *-audit-*log.gz | \
+cat *-audit-*log | \
   jq '. | select(.annotations | has("pod-security.kubernetes.io/audit-violations")) |
   {
      namespace: .objectRef.namespace,
@@ -110,3 +110,7 @@ cat *-audit-*log.gz | \
 - [David Eads](https://github.com/deads2k)
 - [Camila Macedo](https://github.com/camilamacedo86)
 - [Ben Parees](https://github.com/bparees)
+
+## Talk sources
+
+.image ./images/kcdaustria-qr.png _ 400
