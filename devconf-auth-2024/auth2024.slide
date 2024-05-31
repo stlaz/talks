@@ -1,0 +1,29 @@
+# State of Authentication in 2024
+
+Stanislav Láznička
+Software Engineer at Red Hat
+
+https://github.com/stlaz
+stlaz on k8s Slack
+
+## Speakers
+
+**Fraser Tweedale**
+- Principal Software Engineer, RHCS
+- https://frasertweedale.github.io/blog-redhat/
+
+**Marek Posolda**
+- Principal Software Engineer, Keycloak
+- https://mposolda.github.io/
+
+## Topics
+
+- Getting rid of knowledge-based authentication - good or bad?
+- Passkeys, what they are and what they arent?
+    - State of passkeys in the Linux desktop
+- Maintaining privacy in OIDC
+- Is authentication friends with AI (interesting projects, future use)?
+- OIDC news to be aware of? Are there any OIDC killers on the horizon?
+- Is Kerberos still relevant today?
+- [Identities in the Post-Quantum age](https://openid.net/post-quantum-identity-standards/)
+
