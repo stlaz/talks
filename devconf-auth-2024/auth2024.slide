@@ -16,6 +16,12 @@ stlaz on k8s Slack
 - Principal Software Engineer, Keycloak
 - https://mposolda.github.io/
 
+## Introduction
+
+- Last authentication feature you developed?
+- How to authenticate safely?
+- Favorite product with great authentication experience
+
 ## Topics
 
 - Getting rid of knowledge-based authentication - good or bad?
@@ -25,5 +31,4 @@ stlaz on k8s Slack
 - Is authentication friends with AI (interesting projects, future use)?
 - OIDC news to be aware of? Are there any OIDC killers on the horizon?
 - Is Kerberos still relevant today?
-- [Identities in the Post-Quantum age](https://openid.net/post-quantum-identity-standards/)
 
