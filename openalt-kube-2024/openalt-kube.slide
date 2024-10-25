@@ -1,0 +1,100 @@
+# Co je to ten Kubernetes?
+
+Stanislav Láznička
+Principal Software Engineer at Microsoft
+slznika@microsoft.com
+https://github.com/stlaz
+https://www.linkedin.com/in/slaznicka/
+stlaz on k8s Slack
+
+## Takže co to je?
+
+- IaaS, PaaS? CaaS!
+    - 🤕
+- "an open source system for automating deployment, scaling, and management of containerized applications" (kubernetes.io)
+- Open Source \o/
+    - pravidelné nahrávané meetingy dev skupin (SIGs)
+
+## Kontejnery 🚮
+
+- "Taková virtuálka. Až na to, že vůbec."
+- izolovaná aplikace se vším všudy
+- izolace = Linux kernel namespaces
+```
+$ man 7 namespaces
+       Namespace Flag            Page                  Isolates
+       Cgroup    CLONE_NEWCGROUP cgroup_namespaces(7)  Cgroup root directory
+       IPC       CLONE_NEWIPC    ipc_namespaces(7)     System V IPC, POSIX message queues
+       Network   CLONE_NEWNET    network_namespaces(7) Network devices, stacks, ports, etc.
+       Mount     CLONE_NEWNS     mount_namespaces(7)   Mount points
+       PID       CLONE_NEWPID    pid_namespaces(7)     Process IDs
+       Time      CLONE_NEWTIME   time_namespaces(7)    Boot and monotonic clocks
+       User      CLONE_NEWUSER   user_namespaces(7)    User and group IDs
+       UTS       CLONE_NEWUTS    uts_namespaces(7)     Hostname and NIS domain name
+```
+- [running a container without docker](https://medium.com/@alexander.murylev/run-your-own-container-without-docker-60c297faf010)
+
+## Kubernetes jako orchestrátor kontejnerů
+
+- orchestrace
+    - automatizované nasazování, konfigurace a správa
+- kontejner = aplikace
+- deklarativní REST API
+- CLI - `kubectl`
+
+## No, dobře, ale...
+
+- secure by default
+- automatický loadbalancing (`Service` objekty)
+- replikace, autoscaling
+- kontrola živosti aplikace
+- metriky na vše možné i nemožné
+- obrovský ekosystém
+
+## Máte architekturu? A mohla bych ji vidět?
+
+.image ./components-of-kubernetes.svg _ 1000
+.caption source: https://kubernetes.io/docs/concepts/overview/components/
+
+## Pod
+
+- nejmenší prvek pro nasazení aplikace
+- jeden i více kontejnerů
+    - init
+    - normal
+    - ephemeral
+- design pattern - sidecar container
+
+## Pod lifecycle
+
+- pod life phases:
+    - Pending
+        - pod vytvořený, čeká na scheduling, volumes, a stažení image
+    - Running
+        - pod je napojený na node at least a alespoň jeden kontejner stále běží nebo startuje
+    - Succeeded/Failed
+        - všechny kontejnery skončily
+    - Unknown
+        - stav podu se nepodařilo zjistit
+- pod nepřežije eviction nebo selhání node
+
+## Pod - ukázka
+
+- `Pod` object
+
+.link ./pod.yaml
+
+## Deployment
+
+- `Deployment` object
+
+.link ./deployment.yaml
+
+## Deployment - funkce jednotlivých komponent
+
+.image ./components-of-kubernetes.svg _ 1000
+.caption source: https://kubernetes.io/docs/concepts/overview/components/
+
+## Microsoft má kancl v Brně
+
+.image ./pozice.png
