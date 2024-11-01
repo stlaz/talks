@@ -36,9 +36,9 @@ $ man 7 namespaces
 
 ## Kubernetes jako orchestrátor kontejnerů
 
+- kontejner = aplikace
 - orchestrace
     - automatizované nasazování, konfigurace a správa
-- kontejner = aplikace
 - deklarativní REST API
 - CLI - `kubectl`
 
@@ -56,6 +56,16 @@ $ man 7 namespaces
 .image ./components-of-kubernetes.svg _ 1000
 .caption source: https://kubernetes.io/docs/concepts/overview/components/
 
+## API
+
+- metadata - typ, souřadnice, popisky
+- namespaces - izolace mezi uživateli
+- snadno rozšiřitelné
+    - CRD + CEL
+    - agregační API vrstva
+
+.code -numbers ./pod.yaml /START OMIT/,/END OMIT/
+
 ## Pod
 
 - nejmenší prvek pro nasazení aplikace
@@ -67,7 +77,7 @@ $ man 7 namespaces
 
 ## Pod lifecycle
 
-- pod life phases:
+- životní cyklus podu:
     - Pending
         - pod vytvořený, čeká na scheduling, volumes, a stažení image
     - Running
@@ -78,23 +88,15 @@ $ man 7 namespaces
         - stav podu se nepodařilo zjistit
 - pod nepřežije eviction nebo selhání node
 
-## Pod - ukázka
-
-- `Pod` object
-
-.link ./pod.yaml
-
 ## Deployment
 
-- `Deployment` object
-
-.link ./deployment.yaml
+.code ./deployment.yaml /kind:/,/image:/
 
 ## Deployment - funkce jednotlivých komponent
 
 .image ./components-of-kubernetes.svg _ 1000
 .caption source: https://kubernetes.io/docs/concepts/overview/components/
 
-## Microsoft má kancl v Brně
+## Microsoft má office v Brně
 
 .image ./pozice.png
