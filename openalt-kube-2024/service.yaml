@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: httpbin-svc
+  labels:
+    app: kube-demo
+spec:
+  type: ClusterIP
+  ports:
+  - name: https-svc
+    port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: kube-demo

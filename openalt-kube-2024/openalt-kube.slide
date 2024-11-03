@@ -1,6 +1,6 @@
 # Co je to ten Kubernetes?
 
-Stanislav Láznička
+Standa Láznička
 Principal Software Engineer at Microsoft
 slznika@microsoft.com
 https://github.com/stlaz
@@ -12,8 +12,14 @@ stlaz on k8s Slack
 - IaaS, PaaS? CaaS!
     - 🤕
 - "an open source system for automating deployment, scaling, and management of containerized applications" (kubernetes.io)
-- Open Source \o/
-    - pravidelné nahrávané meetingy dev skupin (SIGs)
+
+## Kubernetes a Open Source
+
+- steering committee
+- rozdělení na zájmové skupiny (SIGs)
+- pravidelné nahrávané otevřené meetingy
+- otevřený model vývoje od designu po implementaci
+- struktura zdokumentována na [github.com/kubernetes/community](https://github.com/kubernetes/community)
 
 ## Kontejnery 🚮
 
@@ -64,32 +70,35 @@ $ man 7 namespaces
     - CRD + CEL
     - agregační API vrstva
 
-.code -numbers ./pod.yaml /START OMIT/,/END OMIT/
+.code -numbers ./pod.yaml /kind:/,/image:/
 
 ## Pod
 
 - nejmenší prvek pro nasazení aplikace
 - jeden i více kontejnerů
-    - init
-    - normal
-    - ephemeral
+    - init, normal, ephemeral
 - design pattern - sidecar container
-
-## Pod lifecycle
-
-- životní cyklus podu:
-    - Pending
-        - pod vytvořený, čeká na scheduling, volumes, a stažení image
-    - Running
-        - pod je napojený na node at least a alespoň jeden kontejner stále běží nebo startuje
-    - Succeeded/Failed
-        - všechny kontejnery skončily
-    - Unknown
-        - stav podu se nepodařilo zjistit
+- životní cyklus podu
+    - Pending, Running, Succeeded/Failed, Unknown
 - pod nepřežije eviction nebo selhání node
+
+:    - Pending
+:        - pod vytvořený, čeká na scheduling, volumes, a stažení image
+:    - Running
+:        - pod je napojený na node at least a alespoň jeden kontejner stále běží nebo startuje
+:    - Succeeded/Failed
+:        - všechny kontejnery skončily
+:    - Unknown
+:        - stav podu se nepodařilo zjistit
 
 ## Deployment
 
+- zajišťuje *n* replik podu
+- jednoduché škálování
+- historie rolloutů
+- `StatefulSet` pro stavové aplikace
+
+## Deployment example
 .code ./deployment.yaml /kind:/,/image:/
 
 ## Deployment - funkce jednotlivých komponent
@@ -99,4 +108,10 @@ $ man 7 namespaces
 
 ## Microsoft má office v Brně
 
-.image ./pozice.png
+Vlněna 5, Clubco
+
+.image ./pozice.png _ 400
+
+## Slajdy here
+
+.image ./slides-link.png _ 400
