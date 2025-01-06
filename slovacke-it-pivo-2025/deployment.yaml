@@ -1,0 +1,31 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: httpbin-deployment
+  labels:
+    app: kube-demo
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kube-demo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: kube-demo
+    spec:
+      containers:
+      - name: httpbin
+        image: kennethreitz/httpbin:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: GUNICORN_CMD_ARGS
+          value: >-
+            --access-logfile=-
+        ports:
+        - name: allport
+          containerPort: 80
+        securityContext:
+          runAsUser: 0

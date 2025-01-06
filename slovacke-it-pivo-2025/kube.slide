@@ -1,0 +1,78 @@
+# Kubernetes, co a jak
+
+Standa Láznička
+Principal Software Engineer at Microsoft
+slznika@microsoft.com
+https://github.com/stlaz
+https://www.linkedin.com/in/slaznicka/
+stlaz on k8s Slack
+
+## Co to je?
+
+- "an open source system for automating deployment, scaling, and management of containerized applications" (kubernetes.io)
+- kontejnery a container images
+- automatické škálování deploymentů, kontrola živosti
+- network loadbalancing
+- REST API, CLI (`kubectl`)
+
+## Kubernetes a Open Source
+
+- steering committee
+- rozdělení na zájmové skupiny (SIGs)
+- pravidelné nahrávané otevřené meetingy
+- otevřený model vývoje od designu po implementaci
+- struktura zdokumentována na [github.com/kubernetes/community](https://github.com/kubernetes/community)
+
+## Máte architekturu? A mohla bych ji vidět?
+
+.image ./components-of-kubernetes.svg _ 1000
+.caption source: https://kubernetes.io/docs/concepts/overview/components/
+
+## API
+
+- metadata - typ, souřadnice, popisky
+- namespaces - izolace mezi uživateli
+- snadno rozšiřitelné
+    - CRD + CEL
+    - agregační API vrstva
+
+.code -numbers ./pod.yaml /kind:/,/image:/
+
+## Pod
+
+- nejmenší prvek pro nasazení aplikace
+- jeden i více kontejnerů
+    - init, normal, ephemeral
+- design pattern - sidecar container
+- životní cyklus podu
+    - Pending, Running, Succeeded/Failed, Unknown
+- pod nepřežije eviction nebo selhání node
+
+:    - Pending
+:        - pod vytvořený, čeká na scheduling, volumes, a stažení image
+:    - Running
+:        - pod je napojený na node at least a alespoň jeden kontejner stále běží nebo startuje
+:    - Succeeded/Failed
+:        - všechny kontejnery skončily
+:    - Unknown
+:        - stav podu se nepodařilo zjistit
+
+## Deployment
+
+- zajišťuje *n* replik podu
+- jednoduché škálování
+- historie rolloutů
+- `StatefulSet` pro stavové aplikace
+
+## Deployment example
+.code ./deployment.yaml /kind:/,/image:/
+
+## Microsoft má office v Brně
+
+Vlněna 5, Clubco
+
+.image ./pozice.png _ 400
+
+## Slajdy
+
+.image ./slides-link.png _ 400

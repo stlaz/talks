@@ -1,0 +1,20 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: httpbin
+  namespace: pokus
+  labels:
+    app: kube-demo
+spec:
+    containers:
+    - name: httpbin
+      image: kennethreitz/httpbin:latest
+      env:
+      - name: GUNICORN_CMD_ARGS
+        value: >-
+          --access-logfile=-
+      ports:
+      - name: allport
+        containerPort: 80
+      securityContext:
+        runAsUser: 0
