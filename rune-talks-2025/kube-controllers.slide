@@ -72,8 +72,7 @@ Have you ever written a Kubernetes controller?
 
 ## Something real now
 
-<br />
-<br />
+<br /><br />
 
 - [ClusterTrustBundlePublisher](https://github.dev/kubernetes/kubernetes/blob/728dc0d8c7a4d68157b2106330b65abcd5faac87/pkg/controller/certificates/clustertrustbundlepublisher/publisher.go#L68-L69)
 
@@ -85,6 +84,19 @@ Have you ever written a Kubernetes controller?
 - clients are for writing, listers for reading
 - informers feed the workqueue
 - keys from workqueue are handled in `sync*()`
+
+## Homework
+
+<br />
+
+[github.com/stlaz/sample-kube-controller](https://github.com/stlaz/sample-kube-controller/tree/enhance), branch _**enhance**_
+- fork of https://github.com/kubernetes/sample-controller
+- adds a Makefile with a couple helpful targets
+- project structure I prefer
+- +automatic generating of CRDs
+- +Dockerfile
+- +sample deployment into a `kind` cluster
+- +vendor for offline builds
 
 ## Microsoft has offices in Brno
 
