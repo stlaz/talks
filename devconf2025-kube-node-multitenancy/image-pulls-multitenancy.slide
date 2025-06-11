@@ -30,11 +30,11 @@ stlaz on k8s Slack
 1. credentials passed via a Secret from Pod
 1. **kubelet** issues an image pull request to CRI
     - uses the creds from the secret(s)
-1. **CRI** reaches the remote registry
+1. **container runtime** reaches the remote registry
     - attempts pull with the credentials
 1. the registry authenticates the user, returns image
-    - pulling user identity is not a part of the returned image (manifest)
-1. **CRI** stores the image for local use
+1. **container runtime** stores the image for local use
+    - identity of the pulling user is not a part of the stored data
 1. **kubelet** runs a container with the image
 
 ## Oh no, async components 🤦
@@ -78,18 +78,25 @@ stlaz on k8s Slack
 imagePullCredentialsVerificationPolicy: <4 different policies>
 preloadedImagesVerificationAllowlist: <list of full-path wildcard segments (ends with /*)>
 ```
-- on disk cache (1.34 should add in-memory) caching layer:
+- on-disk (1.34 should add in-memory) caching layer:
 ```
 /var/lib/kubelet/image_manager/pulling
 /var/lib/kubelet/image_manager/pulled
 ```
-- filenames are a SHA256 hash of image name/CRI ref (resp.)
+- filenames = SHA256 hash of image name/CRI ref (resp.)
 
 ## Persisted records 
 
-- image pull intent record:
+- Image Pull Intent record:
     - store the image name from Pod spec
-- removed on image pull completed
+    - removed on image pull complete
+- Imaged Pulled record:
+    - how was an image pulled
+      - node accessible creds
+      - using a Secret
+      - upcoming - using an SA token
+
+## Image Pull Intent
 
 ```go
 // ImagePullIntent is a record of the kubelet attempting to pull an image.
@@ -99,13 +106,7 @@ type ImagePullIntent struct {
 }
 ```
 
-## Persisted records (2)
-
-- image-pulled records
-    - node accessible?
-    - metadata of a Secret used for pulling + SHA256 hash of the creds
-
-## Image pulled record
+## Image Pulled Record
 
 ```go
 type ImagePulledRecord struct {
