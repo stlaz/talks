@@ -1,0 +1,173 @@
+# Caching filesystem access
+
+Standa Láznička
+Principal Software Engineer at Microsoft
+stanislav.laznicka@microsoft.com
+https://github.com/stlaz
+https://www.linkedin.com/in/slaznicka/
+stlaz on k8s Slack
+
+## Caching
+
+- everybody knows what this is
+    - accessing stuff is slow? Add O(1) access buffer layer!
+
+.image ./babushka-no.png 400 _
+
+## Caching issues
+
+- no infinite memory
+- understand the usecase
+- understand the constraints
+- pick the right pattern
+- investigate when caching stays efficient
+- cache record invalidation
+
+## Caching patterns
+
+- by datastore access
+   - cache-aside, read-through, write-through, write-behind, refresh-ahead
+- by size-limitation caching strategy
+    - least recently used, least frequenly used, FIFO, LIFO, random replacement
+- LRU reference implementations
+    - [github.com/hashicorp/golang-lru](https://github.com/hashicorp/golang-lru)
+        - MPL licence [may not fit everyone](https://github.com/kubernetes/kubernetes/pull/95472)
+    - [k8s.io/utils/internal/third_party/forked/golang/golang-lru/lru.go](https://github.com/kubernetes/utils/blob/28399d86e0b55e612b83ad94dc6bac8e5de2a5ac/internal/third_party/forked/golang/golang-lru/lru.go)
+        - a bit more dated
+
+: the mid three strategies allow the cache to decide cache records update strategy
+
+## Kubelet image access authorization
+
+- guard access to images pulled to the system
+- **usecase**
+  - authorization records = JSON on disk
+  - concurrency
+- **constraints**
+  - resources shared with orchestrated processes
+    - recommended [max 110*N processes](https://kubernetes.io/docs/setup/best-practices/cluster-large/), N is a small number
+  - some may run it on edge
+- Kubernetes [KEP 2535](https://github.com/kubernetes/enhancements/blob/d17ccb7e618b7ac1f3c5c97ca1a6b43c073fdcbe/keps/sig-node/2535-ensure-secret-pulled-images/README.md)
+
+: async between the kubelet and the container runtime
+: no container-runtime native way to store the information
+: the constraints also mean we should aggressively clean allocated memory when no longer needed
+: the vast number of usecases means we need to be able to accept user input to size the cache right - luckily, maxPods
+
+## Dealing with memory constraints
+
+k8s LRU
+```go
+// Cache is an LRU cache. It is not safe for concurrent access.
+type Cache struct {
+	// MaxEntries is the maximum number of cache entries before
+	// an item is evicted. Zero means no limit.
+	MaxEntries int
+
+	// OnEvicted optionally specifies a callback function to be
+	// executed when an entry is purged from the cache.
+	OnEvicted func(key Key, value interface{})
+
+	ll    *list.List
+	cache map[interface{}]*list.Element
+}
+```
+- freshly-read and new items on top of `ll`
+- write on full cache
+    - last `ll` item removed
+    - `OnEvicted()` called for the removed elem
+
+## Dealing with memory constraints - real life
+
+- combining access
+    - LRU cache
+    - data storage on misses
+- LRU cache misses expensive
+- **cache authority**
+    - *size(datastore) < size(cache)*
+    - size = mandatory parameter
+        - fine-tuning effectivity
+- strive for authoritative mode
+
+## Concurrent access
+
+- protect access to datastore
+- avoiding lock contention
+    - use named locks - **`datastruct.Lock(name)`**
+- `sync.Map[sync.Mutex]`
+    - memory constraints still apply!
+        - when is it safe to free a lock from the map?
+- limited prealloc'd lock set?
+
+## Concurrent access - striped lock set
+
+```go
+// StripedLockSet allows context locking based on string keys, where each key
+// is mapped to a an index in a size-limited slice of locks.
+type StripedLockSet struct {
+	locks []sync.Mutex
+	size  int32
+}
+
+func (s *StripedLockSet) Lock(key string) {
+	s.locks[keyToID(key, s.size)].Lock()
+}
+
+func (s *StripedLockSet) GlobalLock() {
+	for i := range s.locks {
+		s.locks[i].Lock()
+	}
+}
+
+func keyToID(key string, sliceSize int32) uint32 {
+	h := fnv.New32()
+	h.Write([]byte(key))
+	return h.Sum32() % uint32(sliceSize)
+}
+```
+
+## Summarized - Write(record)
+
+1. cache.Lock(record.Name); defer(cache.Unlock(record.Name))
+2. datastore.Write(record)
+3. cache.lru.Set(record.Name, record)
+
+## Summarized - Read(recordName)
+
+1. cache.lru.Get(recordName) # cheap lookup
+    - *miss!*
+1. cache.Lock(recordName)
+1. cache.lru.Get(recordName) # could've been written
+    - *miss!*
+1. cache.isAuthoritative # isAuthoritative is atomic.Bool
+    - *false!*
+1. datastore.Get(recordName)
+    - *hit!*
+1. cache.lru.Set(recordName, record) # might cause isAuthoritative=false
+
+## Benchmarking
+
+- caching ✕ direct access
+- parameters?
+    - authoritative ✕ non-authoritative
+        - non-authoritative: a little ✕ a lot
+    - cache hits ✕ cache misses
+    - concurrency? Lock contention!
+
+## Lock contention benchmarks?
+
+- how to test?
+    - **`b.SetParallelism(p)`** runs *p\*GOMAXPROCS* test goroutines
+- set *StripedLockSet* size to `runtime.NumCPU()`
+- p
+    - == 1 -> true parallelism
+    - \>1 -> concurrency
+
+: TODO = missing common structure of a benchmark and working with benchmark results
+
+## Read more about it!
+
+- KEP: [https://kep.k8s.io/2535](https://kep.k8s.io/2535)
+- Cache implementation: [kubernetes/kubernetes/pull/131882](https://github.com/kubernetes/kubernetes/pull/131882)
+- Benchmark implementation and results - [kubernetes/kubernetes/pull/131864](https://github.com/kubernetes/kubernetes/pull/131864)
+
