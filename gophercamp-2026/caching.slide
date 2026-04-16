@@ -163,7 +163,45 @@ func keyToID(key string, sliceSize int32) uint32 {
     - == 1 -> true parallelism
     - \>1 -> concurrency
 
-: TODO = missing common structure of a benchmark and working with benchmark results
+## Benchmark structure
+
+```go
+func BenchmarkStuff(b *testing.B) {
+    // initialize structures, prepare test data
+    for b.Loop() {
+        // measured code
+    }
+    // cleanup
+}
+
+func BenchmarkStuffInParallel(b *testing.B) {
+    // initialize structures, prepare test data
+    b.ResetTimer()
+    b.RunParallel(func(pb *testing.PB) {
+        for pb.Next() {
+            // measured code
+        }
+    })
+    b.StopTimer()
+    // cleanup
+
+}
+```
+
+## Running benchmarks
+
+- isolated, stable machine with little to no activity
+- test minimal code units
+- run each benchmark multiple times
+    - analyze deviations
+- **`go test benchmem -count 10 -timeout 40m -run ^$ -bench ^BMName$ '<path>' > result.txt`**
+- [golang.org/x/perf/cmd/benchstat](https://golang.org/x/perf/cmd/benchstat)
+    - **`benchstat -col /Type -filter '/Type:(FileSystemAccessor OR InMemoryCache-Authoritative)' result.txt`**
+
+## Example results
+
+.link ./mustattemptpull_hit.txt
+.link ./mustattemptpull_hit_benchstat.txt
 
 ## Read more about it!
 
