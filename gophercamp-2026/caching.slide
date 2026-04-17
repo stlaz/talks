@@ -39,7 +39,7 @@ stlaz on k8s Slack
 
 ## Kubelet image access authorization
 
-- guard access to images pulled to the system
+- guard access to private images pulled onto the node
 - **usecase**
   - authorization records = JSON on disk
   - concurrency
@@ -128,7 +128,7 @@ func keyToID(key string, sliceSize int32) uint32 {
 
 ## Summarized - Write(record)
 
-1. cache.Lock(record.Name); defer(cache.Unlock(record.Name))
+1. cache.locks.Lock(record.Name); defer cache.locks.Unlock(record.Name)
 2. datastore.Write(record)
 3. cache.lru.Set(record.Name, record)
 
@@ -136,7 +136,7 @@ func keyToID(key string, sliceSize int32) uint32 {
 
 1. cache.lru.Get(recordName) # cheap lookup
     - *miss!*
-1. cache.Lock(recordName)
+1. cache.locks.Lock(recordName); defer cache.locks.Unlock(recordName)
 1. cache.lru.Get(recordName) # could've been written
     - *miss!*
 1. cache.isAuthoritative # isAuthoritative is atomic.Bool
@@ -157,6 +157,7 @@ func keyToID(key string, sliceSize int32) uint32 {
 ## Lock contention benchmarks?
 
 - how to test?
+    - no good tools to do "LockSet size = 2, run 4 goroutines in loop"
     - **`b.SetParallelism(p)`** runs *p\*GOMAXPROCS* test goroutines
 - set *StripedLockSet* size to `runtime.NumCPU()`
 - p
@@ -176,6 +177,7 @@ func BenchmarkStuff(b *testing.B) {
 
 func BenchmarkStuffInParallel(b *testing.B) {
     // initialize structures, prepare test data
+    b.SetPrallelism(<int greater than 0>)
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
