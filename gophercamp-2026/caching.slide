@@ -25,9 +25,9 @@ stlaz on k8s Slack
 
 ## Caching patterns
 
-- by datastore access
+- [by datastore access](https://hazelcast.com/blog/a-hitchhikers-guide-to-caching-patterns/)
    - cache-aside, read-through, write-through, write-behind, refresh-ahead
-- by size-limitation caching strategy
+- [by size-limitation caching strategy](https://hazelcast.com/foundations/caching/caching-strategies/)
     - least recently used, least frequenly used, FIFO, LIFO, random replacement
 - LRU reference implementations
     - [github.com/hashicorp/golang-lru](https://github.com/hashicorp/golang-lru)
@@ -83,7 +83,7 @@ type Cache struct {
     - LRU cache
     - data storage on misses
 - LRU cache misses expensive
-- **cache authority**
+- **cache authority** (with a warm cache)
     - *size(datastore) < size(cache)*
     - size = mandatory parameter
         - fine-tuning effectivity
@@ -177,7 +177,7 @@ func BenchmarkStuff(b *testing.B) {
 
 func BenchmarkStuffInParallel(b *testing.B) {
     // initialize structures, prepare test data
-    b.SetPrallelism(<int greater than 0>)
+    b.SetParallelism(<int greater than 0>)
     b.ResetTimer()
     b.RunParallel(func(pb *testing.PB) {
         for pb.Next() {
